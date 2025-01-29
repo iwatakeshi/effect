@@ -89,162 +89,160 @@ const expectAsyncFailure = async <I, A>(
 
 const AsyncNonEmptyString = AsyncString.pipe(Schema.minLength(1))
 
-describe("StandardSchema", () => {
-  describe("standard", () => {
-    it("sync decoding + sync issue formatting", () => {
-      const schema = Schema.NonEmptyString
-      const standardSchema = Schema.standardSchemaV1(schema)
-      expectSyncSuccess(standardSchema, "a", "a")
-      expectSyncFailure(standardSchema, null, [
-        {
-          message: "Expected string, actual null",
-          path: []
-        }
-      ])
-      expectSyncFailure(standardSchema, "", [
-        {
-          message: `Expected a non empty string, actual ""`,
-          path: []
-        }
-      ])
+describe("standardSchemaV1", () => {
+  it("sync decoding + sync issue formatting", () => {
+    const schema = Schema.NonEmptyString
+    const standardSchema = Schema.standardSchemaV1(schema)
+    expectSyncSuccess(standardSchema, "a", "a")
+    expectSyncFailure(standardSchema, null, [
+      {
+        message: "Expected string, actual null",
+        path: []
+      }
+    ])
+    expectSyncFailure(standardSchema, "", [
+      {
+        message: `Expected a non empty string, actual ""`,
+        path: []
+      }
+    ])
+  })
+
+  it("sync decoding + sync custom message", () => {
+    const schema = Schema.NonEmptyString.annotations({ message: () => Effect.succeed("my message") })
+    const standardSchema = Schema.standardSchemaV1(schema)
+    expectSyncSuccess(standardSchema, "a", "a")
+    expectSyncFailure(standardSchema, null, [
+      {
+        message: "Expected string, actual null",
+        path: []
+      }
+    ])
+    expectSyncFailure(standardSchema, "", [
+      {
+        message: "my message",
+        path: []
+      }
+    ])
+  })
+
+  it("sync decoding + async custom message", async () => {
+    const schema = Schema.NonEmptyString.annotations({
+      message: () => Effect.succeed("my message").pipe(Effect.delay("10 millis"))
     })
+    const standardSchema = Schema.standardSchemaV1(schema)
+    expectSyncSuccess(standardSchema, "a", "a")
+    await expectAsyncFailure(standardSchema, null, [
+      {
+        message: "Expected string, actual null",
+        path: []
+      }
+    ])
+    await expectAsyncFailure(standardSchema, "", [
+      {
+        message: "my message",
+        path: []
+      }
+    ])
+  })
 
-    it("sync decoding + sync custom message", () => {
-      const schema = Schema.NonEmptyString.annotations({ message: () => Effect.succeed("my message") })
-      const standardSchema = Schema.standardSchemaV1(schema)
-      expectSyncSuccess(standardSchema, "a", "a")
-      expectSyncFailure(standardSchema, null, [
-        {
-          message: "Expected string, actual null",
-          path: []
-        }
-      ])
-      expectSyncFailure(standardSchema, "", [
-        {
-          message: "my message",
-          path: []
-        }
-      ])
+  it("async decoding + sync issue formatting", async () => {
+    const schema = AsyncNonEmptyString
+    const standardSchema = Schema.standardSchemaV1(schema)
+    await expectAsyncSuccess(standardSchema, "a", "a")
+    expectSyncFailure(standardSchema, null, [
+      {
+        message: "Expected string, actual null",
+        path: []
+      }
+    ])
+    await expectAsyncFailure(standardSchema, "", [
+      {
+        message: `Expected a string at least 1 character(s) long, actual ""`,
+        path: []
+      }
+    ])
+  })
+
+  it("async decoding + sync custom message", async () => {
+    const schema = AsyncNonEmptyString.annotations({ message: () => Effect.succeed("my message") })
+    const standardSchema = Schema.standardSchemaV1(schema)
+    await expectAsyncSuccess(standardSchema, "a", "a")
+    expectSyncFailure(standardSchema, null, [
+      {
+        message: "Expected string, actual null",
+        path: []
+      }
+    ])
+    await expectAsyncFailure(standardSchema, "", [
+      {
+        message: "my message",
+        path: []
+      }
+    ])
+  })
+
+  it("async decoding + async custom message", async () => {
+    const schema = AsyncNonEmptyString.annotations({
+      message: () => Effect.succeed("my message").pipe(Effect.delay("10 millis"))
     })
+    const standardSchema = Schema.standardSchemaV1(schema)
+    await expectAsyncSuccess(standardSchema, "a", "a")
+    await expectAsyncFailure(standardSchema, null, [
+      {
+        message: "Expected string, actual null",
+        path: []
+      }
+    ])
+    await expectAsyncFailure(standardSchema, "", [
+      {
+        message: "my message",
+        path: []
+      }
+    ])
+  })
 
-    it("sync decoding + async custom message", async () => {
-      const schema = Schema.NonEmptyString.annotations({
-        message: () => Effect.succeed("my message").pipe(Effect.delay("10 millis"))
-      })
-      const standardSchema = Schema.standardSchemaV1(schema)
-      expectSyncSuccess(standardSchema, "a", "a")
-      await expectAsyncFailure(standardSchema, null, [
-        {
-          message: "Expected string, actual null",
-          path: []
-        }
-      ])
-      await expectAsyncFailure(standardSchema, "", [
-        {
-          message: "my message",
-          path: []
-        }
-      ])
-    })
+  describe("missing dependencies", () => {
+    class MagicNumber extends Context.Tag("Min")<MagicNumber, number>() {}
 
-    it("async decoding + sync issue formatting", async () => {
-      const schema = AsyncNonEmptyString
-      const standardSchema = Schema.standardSchemaV1(schema)
-      await expectAsyncSuccess(standardSchema, "a", "a")
-      expectSyncFailure(standardSchema, null, [
-        {
-          message: "Expected string, actual null",
-          path: []
-        }
-      ])
-      await expectAsyncFailure(standardSchema, "", [
-        {
-          message: `Expected a string at least 1 character(s) long, actual ""`,
-          path: []
-        }
-      ])
-    })
-
-    it("async decoding + sync custom message", async () => {
-      const schema = AsyncNonEmptyString.annotations({ message: () => Effect.succeed("my message") })
-      const standardSchema = Schema.standardSchemaV1(schema)
-      await expectAsyncSuccess(standardSchema, "a", "a")
-      expectSyncFailure(standardSchema, null, [
-        {
-          message: "Expected string, actual null",
-          path: []
-        }
-      ])
-      await expectAsyncFailure(standardSchema, "", [
-        {
-          message: "my message",
-          path: []
-        }
-      ])
-    })
-
-    it("async decoding + async custom message", async () => {
-      const schema = AsyncNonEmptyString.annotations({
-        message: () => Effect.succeed("my message").pipe(Effect.delay("10 millis"))
-      })
-      const standardSchema = Schema.standardSchemaV1(schema)
-      await expectAsyncSuccess(standardSchema, "a", "a")
-      await expectAsyncFailure(standardSchema, null, [
-        {
-          message: "Expected string, actual null",
-          path: []
-        }
-      ])
-      await expectAsyncFailure(standardSchema, "", [
-        {
-          message: "my message",
-          path: []
-        }
-      ])
-    })
-
-    describe("missing dependencies", () => {
-      class MagicNumber extends Context.Tag("Min")<MagicNumber, number>() {}
-
-      it("sync decoding should throw", () => {
-        const DepString = Schema.transformOrFail(Schema.Number, Schema.Number, {
-          strict: true,
-          decode: (n) =>
-            Effect.gen(function*(_) {
-              const magicNumber = yield* MagicNumber
-              return n * magicNumber
-            }),
-          encode: ParseResult.succeed
-        })
-
-        const schema = DepString
-        const standardSchema = Schema.standardSchemaV1(schema as any)
-        expectSyncFailure(standardSchema, 1, (issues) => {
-          strictEqual(issues.length, 1)
-          deepStrictEqual(issues[0].path, undefined)
-          assertTrue(issues[0].message.includes("Service not found: Min"))
-        })
+    it("sync decoding should throw", () => {
+      const DepString = Schema.transformOrFail(Schema.Number, Schema.Number, {
+        strict: true,
+        decode: (n) =>
+          Effect.gen(function*(_) {
+            const magicNumber = yield* MagicNumber
+            return n * magicNumber
+          }),
+        encode: ParseResult.succeed
       })
 
-      it("async decoding should throw", () => {
-        const DepString = Schema.transformOrFail(Schema.Number, Schema.Number, {
-          strict: true,
-          decode: (n) =>
-            Effect.gen(function*(_) {
-              const magicNumber = yield* MagicNumber
-              yield* Effect.sleep("10 millis")
-              return n * magicNumber
-            }),
-          encode: ParseResult.succeed
-        })
+      const schema = DepString
+      const standardSchema = Schema.standardSchemaV1(schema as any)
+      expectSyncFailure(standardSchema, 1, (issues) => {
+        strictEqual(issues.length, 1)
+        deepStrictEqual(issues[0].path, undefined)
+        assertTrue(issues[0].message.includes("Service not found: Min"))
+      })
+    })
 
-        const schema = DepString
-        const standardSchema = Schema.standardSchemaV1(schema as any)
-        expectSyncFailure(standardSchema, 1, (issues) => {
-          strictEqual(issues.length, 1)
-          deepStrictEqual(issues[0].path, undefined)
-          assertTrue(issues[0].message.includes("Service not found: Min"))
-        })
+    it("async decoding should throw", () => {
+      const DepString = Schema.transformOrFail(Schema.Number, Schema.Number, {
+        strict: true,
+        decode: (n) =>
+          Effect.gen(function*(_) {
+            const magicNumber = yield* MagicNumber
+            yield* Effect.sleep("10 millis")
+            return n * magicNumber
+          }),
+        encode: ParseResult.succeed
+      })
+
+      const schema = DepString
+      const standardSchema = Schema.standardSchemaV1(schema as any)
+      expectSyncFailure(standardSchema, 1, (issues) => {
+        strictEqual(issues.length, 1)
+        deepStrictEqual(issues[0].path, undefined)
+        assertTrue(issues[0].message.includes("Service not found: Min"))
       })
     })
   })
