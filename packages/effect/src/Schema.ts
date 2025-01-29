@@ -156,13 +156,13 @@ const makeStandardFailureResult = (message: string): StandardSchemaV1.FailureRes
  *
  * //      ┌─── StandardSchemaV1<{ readonly name: string; }>
  * //      ▼
- * const standardSchema = Schema.standard(schema)
+ * const standardSchema = Schema.standardSchemaV1(schema)
  * ```
  *
  * @category Standard Schema
  * @since 3.13.0
  */
-export const standard = <A, I>(schema: Schema<A, I, never>): StandardSchemaV1<I, A> => {
+export const standardSchemaV1 = <A, I>(schema: Schema<A, I, never>): StandardSchemaV1<I, A> => {
   const decodeUnknown = ParseResult.decodeUnknown(schema)
   return {
     "~standard": {

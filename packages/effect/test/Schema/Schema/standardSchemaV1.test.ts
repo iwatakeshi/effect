@@ -93,7 +93,7 @@ describe("StandardSchema", () => {
   describe("standard", () => {
     it("sync decoding + sync issue formatting", () => {
       const schema = Schema.NonEmptyString
-      const standardSchema = Schema.standard(schema)
+      const standardSchema = Schema.standardSchemaV1(schema)
       expectSyncSuccess(standardSchema, "a", "a")
       expectSyncFailure(standardSchema, null, [
         {
@@ -111,7 +111,7 @@ describe("StandardSchema", () => {
 
     it("sync decoding + sync custom message", () => {
       const schema = Schema.NonEmptyString.annotations({ message: () => Effect.succeed("my message") })
-      const standardSchema = Schema.standard(schema)
+      const standardSchema = Schema.standardSchemaV1(schema)
       expectSyncSuccess(standardSchema, "a", "a")
       expectSyncFailure(standardSchema, null, [
         {
@@ -131,7 +131,7 @@ describe("StandardSchema", () => {
       const schema = Schema.NonEmptyString.annotations({
         message: () => Effect.succeed("my message").pipe(Effect.delay("10 millis"))
       })
-      const standardSchema = Schema.standard(schema)
+      const standardSchema = Schema.standardSchemaV1(schema)
       expectSyncSuccess(standardSchema, "a", "a")
       await expectAsyncFailure(standardSchema, null, [
         {
@@ -149,7 +149,7 @@ describe("StandardSchema", () => {
 
     it("async decoding + sync issue formatting", async () => {
       const schema = AsyncNonEmptyString
-      const standardSchema = Schema.standard(schema)
+      const standardSchema = Schema.standardSchemaV1(schema)
       await expectAsyncSuccess(standardSchema, "a", "a")
       expectSyncFailure(standardSchema, null, [
         {
@@ -167,7 +167,7 @@ describe("StandardSchema", () => {
 
     it("async decoding + sync custom message", async () => {
       const schema = AsyncNonEmptyString.annotations({ message: () => Effect.succeed("my message") })
-      const standardSchema = Schema.standard(schema)
+      const standardSchema = Schema.standardSchemaV1(schema)
       await expectAsyncSuccess(standardSchema, "a", "a")
       expectSyncFailure(standardSchema, null, [
         {
@@ -187,7 +187,7 @@ describe("StandardSchema", () => {
       const schema = AsyncNonEmptyString.annotations({
         message: () => Effect.succeed("my message").pipe(Effect.delay("10 millis"))
       })
-      const standardSchema = Schema.standard(schema)
+      const standardSchema = Schema.standardSchemaV1(schema)
       await expectAsyncSuccess(standardSchema, "a", "a")
       await expectAsyncFailure(standardSchema, null, [
         {
@@ -218,7 +218,7 @@ describe("StandardSchema", () => {
         })
 
         const schema = DepString
-        const standardSchema = Schema.standard(schema as any)
+        const standardSchema = Schema.standardSchemaV1(schema as any)
         expectSyncFailure(standardSchema, 1, (issues) => {
           strictEqual(issues.length, 1)
           deepStrictEqual(issues[0].path, undefined)
@@ -239,7 +239,7 @@ describe("StandardSchema", () => {
         })
 
         const schema = DepString
-        const standardSchema = Schema.standard(schema as any)
+        const standardSchema = Schema.standardSchemaV1(schema as any)
         expectSyncFailure(standardSchema, 1, (issues) => {
           strictEqual(issues.length, 1)
           deepStrictEqual(issues[0].path, undefined)

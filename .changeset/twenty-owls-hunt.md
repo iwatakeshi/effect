@@ -2,7 +2,7 @@
 "effect": minor
 ---
 
-Schema: Add `standard` API to Generate a [Standard Schema v1](https://standardschema.dev/).
+Schema: Add `standardSchemaV1` API to Generate a [Standard Schema v1](https://standardschema.dev/).
 
 **Example**
 
@@ -15,5 +15,5 @@ const schema = Schema.Struct({
 
 //      ┌─── StandardSchemaV1<{ readonly name: string; }>
 //      ▼
-const standardSchema = Schema.standard(schema)
+const standardSchema = Schema.standardSchemaV1(schema)
 ```
